@@ -146,6 +146,45 @@ void snr_extraction(char *data) {
     fprintf(stdout, "\n");
 }
 
+char luhn_check_digit(char *data, uint32_t len) {
+	uint32_t i;
+	/*int conv;*/
+	char cd = '0';
+	int *tmp1 = malloc(len * sizeof(len));
+	int *tmp2 = malloc(len * sizeof(len));
+	memset(tmp1, 0, len);
+	memset(tmp2, 0, len);
+
+	/* Convert each char to int */
+	for (i = 0; i < len; i++) {
+		tmp1[i] = data[i] - '0';
+		fprintf(stdout, "[%d]", tmp1[i]);
+	}
+    fprintf(stdout, "\n");
+
+	/* Double value of odd index */
+	for (i = len-1; i > 0; i--) {
+		if (i % 2 == 1) {
+			tmp2[i] = tmp1[i] * 2;
+		} else {
+			tmp2[i] = tmp1[i];
+		}
+	}
+	tmp2[i] = tmp1[i];
+
+	/* Check values */
+	for (i = 0; i < len; i++) {
+		fprintf(stdout, "[%d]", tmp2[i]);
+	}
+    fprintf(stdout, "\n");
+
+
+
+	free(tmp1);
+	free(tmp2);
+	return cd;
+}
+
 int imei_imeisv_checking(char *data) {
 	size_t i;
 	uint32_t nb_digits = 0;
@@ -177,7 +216,7 @@ int imei_imeisv_checking(char *data) {
 	
 	
 	if (nb_digits == IMEI_STR_LEN-1) { /* We should complement IMEI by a Check Digit (CD) */
-
+		luhn_check_digit(data, nb_digits);
 	}
 
 	if (nb_digits == IMEI_STR_LEN) { /* The IMEI lenght is OK but not yet check */
