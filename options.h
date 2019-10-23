@@ -22,6 +22,7 @@
 #define IMEI_STR_LEN	15
 #define IMEISV_STR_LEN	16
 
+#define DEBUG	1
 
 /* Global variables */
 extern char *optarg;
