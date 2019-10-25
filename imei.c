@@ -15,7 +15,7 @@
 /*#include <getopt.h>*/
 #include <ctype.h>
 
-#include "options.h"
+#include "imei.h"
 
 void print_help(void)
 {
@@ -167,6 +167,7 @@ void double_odd_index(int *in, int *out, uint32_t len) {
 	out[i] = in[i];
 }
 
+#if DEBUG
 void dump_int_array(int *tab, uint32_t len) {
 	uint32_t i;
 	for (i = 0; i < len; i++) {
@@ -174,6 +175,7 @@ void dump_int_array(int *tab, uint32_t len) {
 	}
     fprintf(stdout, "\n");
 }
+#endif
 
 int get_nb_char_in_int(int *input, uint32_t len) {
 	uint32_t i;
@@ -184,28 +186,32 @@ int get_nb_char_in_int(int *input, uint32_t len) {
 	for (i = 0; i < len; i++) {
 		sprintf(tab, "%d", input[i]);
         size_elem = strlen(tab);
+#if DEBUG
 		fprintf(stdout, "%d => sz=%lu\n", input[i], size_elem);
+#endif
 		nb_elem += size_elem;
 	}
 
 	return nb_elem;
 }
 
-void convert_int_to_str(int *input, char *output, int len) {
-	int i, j, k;
+void convert_int_to_str(int *input, char *output, uint32_t in_len, uint32_t out_len) {
+	uint32_t i, j, k, o;
 	char tab[3] = {0};
 	size_t size_elem = 0;
 
-	for (i = 0; i < len; i++) {
+	for (i = 0, o = 0; i < in_len || o < out_len; i++, o++) {
 		sprintf(tab, "%d", input[i]);
         size_elem = strlen(tab);
+#if DEBUG
 		fprintf(stdout, "%d => sz=%lu\n", input[i], size_elem);
+#endif
 		if (size_elem == 1) {
-			output[i] = tab[size_elem-1];
+			output[o] = tab[size_elem-1];
 		} else {
-			for (j = 0, k = i; j < (int)size_elem; j++, k++) {
+			for (j = 0, k = o; j < (uint32_t)size_elem; j++, k++) {
 				output[k] = tab[j];
-				i = k;
+				o = k;
 			}
 		}
 	}
@@ -223,37 +229,46 @@ int sum_digits(char *input, int len) {
 }
 
 char luhn_check_digit(char *data, uint32_t len) {
-	int n_chr;
+	uint32_t n_chr;
 	/*int conv;*/
 	char cd = '0';
 	int sum;
+	int next_high_val;
 	int *tmp1 = malloc(len * sizeof(len));
 	int *tmp2 = malloc(len * sizeof(len));
 	char *tmp3;
 	memset(tmp1, 0, len);
 	memset(tmp2, 0, len);
 
-	/* Convert each char to int */
+	/* Convert a string to int */
 	convert_str_to_int(data, tmp1, len);
+#if DEBUG
 	dump_int_array(tmp1, len);
+#endif
 
 	/* Double value of odd index */
 	double_odd_index(tmp1, tmp2, len);
-
-	/* Check values */
+#if DEBUG
 	dump_int_array(tmp2, len);
+#endif
 
 	n_chr = get_nb_char_in_int(tmp2, len);
 	tmp3 = malloc(n_chr);
 	memset(tmp3, 0, n_chr);
 
 	/* Convert int to str */
-    convert_int_to_str(tmp2, tmp3, n_chr);
+    convert_int_to_str(tmp2, tmp3, len, n_chr);
 
 	/* Sum all digits */
 	sum = sum_digits(tmp3, n_chr);
 	if (sum % 10 == 0) {
 		cd = '0';
+	} else {
+		next_high_val = sum;
+		do {
+			next_high_val++;
+		} while (next_high_val % 10 != 0);
+		cd = (char)(next_high_val - sum);
 	}
 
 	free(tmp1);
@@ -261,6 +276,23 @@ char luhn_check_digit(char *data, uint32_t len) {
 	free(tmp3);
 
 	return cd;
+}
+
+
+char *imei_build(char *data, uint32_t len, char cd) {
+	char *imei = NULL;
+	char cd_arr[2] = {0};
+	sprintf(cd_arr, "%c", (cd + '0'));
+
+	imei = malloc(len + 3);
+	if (imei == NULL) {
+		return NULL;
+	}
+
+	strcat(imei, data);
+	strcat(imei, cd_arr);
+
+	return imei;
 }
 
 int imei_imeisv_checking(char *data) {
@@ -295,8 +327,13 @@ int imei_imeisv_checking(char *data) {
 	
 	
 	if (nb_digits == IMEI_STR_LEN-1) { /* We should complement IMEI by a Check Digit (CD) */
+		char *imei;
+		size_t imei_len;
 		cd = luhn_check_digit(data, nb_digits);
-		fprintf(stdout, "CD: %c\n", cd);
+		fprintf(stdout, "CD: %d\n", cd);
+		imei = imei_build(data, nb_digits, cd);
+		imei_len = strlen(imei);
+		fprintf(stdout, "IMEI: %.*s (%lu)\n", (int)imei_len, imei, imei_len);
 	}
 
 	if (nb_digits == IMEI_STR_LEN) { /* The IMEI lenght is OK but not yet check */
