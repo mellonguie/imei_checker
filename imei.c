@@ -134,7 +134,7 @@ void tac_extraction(char *data) {
 	for (i = 0; i < TAC_STR_LEN; i++) {
 		fprintf(stdout, "%c", data[i]);
 	}
-    fprintf(stdout, "\n");
+    fprintf(stdout, " (%d)\n", TAC_STR_LEN);
 }
 
 void snr_extraction(char *data) {
@@ -143,7 +143,7 @@ void snr_extraction(char *data) {
 	for (i = TAC_STR_LEN; i < TAC_STR_LEN + SNR_STR_LEN; i++) {
 		fprintf(stdout, "%c", data[i]);
 	}
-    fprintf(stdout, "\n");
+    fprintf(stdout, " (%d)\n", SNR_STR_LEN);
 }
 
 /* Convert each char to int */
@@ -275,7 +275,7 @@ char luhn_check_digit(char *data, uint32_t len) {
 	free(tmp2);
 	free(tmp3);
 
-	return cd;
+	return (cd + '0'); /* convert to char */
 }
 
 
@@ -295,15 +295,69 @@ char *imei_build(char *data, uint32_t len, char cd) {
 	return imei;
 }
 
+void add_check_digit(char *data, uint32_t nb_digits)
+{
+	char cd;
+	char *imei;
+	size_t imei_len;
+
+	cd = luhn_check_digit(data, nb_digits);
+	fprintf(stdout, "CD: %d\n", cd);
+
+	imei = imei_build(data, nb_digits, cd);
+	imei_len = strlen(imei);
+	
+	fprintf(stdout, "IMEI: %.*s (%lu)\n", (int)imei_len, imei, imei_len);
+}
+
+void extract_sub_string(char *src_data, char *dst_data, int len)
+{
+	int i;
+	for (i = 0; i < len-1; i++) {
+		dst_data[i] = src_data[i];
+	}
+	dst_data[i] = '\0';
+}
+
+int check_last_digit(char *data, uint32_t nb_digits)
+{
+	char cd;
+	
+	/* Get the last digit */
+	char last_digit = data[nb_digits - 1];
+	
+	/* Extract the first fourteen digits in order to 
+	   compare it with last digit */
+	char *imei_tmp = malloc(nb_digits);
+	if (imei_tmp == NULL) {
+		return -1;
+	}
+
+	extract_sub_string(data, imei_tmp, nb_digits);
+	cd = luhn_check_digit(imei_tmp, (uint32_t)strlen(imei_tmp));
+	
+	/* Compare last digit and current CD */
+	if (cd == last_digit) {
+		fprintf(stdout, "IMEI: %.*s (%d) is valid.\n", IMEI_STR_LEN, data, IMEI_STR_LEN);
+	} else {
+		fprintf(stdout, "IMEI: %.*s (%d) is not valid.\n", IMEI_STR_LEN, data, IMEI_STR_LEN);
+	}
+
+	free(imei_tmp);
+
+	return 0;
+}
+
+
 int imei_imeisv_checking(char *data) {
 	size_t i;
-	char cd;
 	uint32_t nb_digits = 0;
 	size_t data_len = strlen(data);
 	
 	/* Check the data len */
 	if (data_len < IMEI_STR_LEN-1 || data_len > IMEISV_STR_LEN) {
-		fprintf(stderr, "The string you have enter cannot be an IMEI or IMEISV !\n");
+		fprintf(stderr, "The string you have enter is %lu digits long and \
+cannot be an IMEI or IMEISV !\n", data_len);
 		return -1;
 	}
 
@@ -326,19 +380,13 @@ int imei_imeisv_checking(char *data) {
 	snr_extraction(data);
 	
 	
-	if (nb_digits == IMEI_STR_LEN-1) { /* We should complement IMEI by a Check Digit (CD) */
-		char *imei;
-		size_t imei_len;
-		cd = luhn_check_digit(data, nb_digits);
-		fprintf(stdout, "CD: %d\n", cd);
-		imei = imei_build(data, nb_digits, cd);
-		imei_len = strlen(imei);
-		fprintf(stdout, "IMEI: %.*s (%lu)\n", (int)imei_len, imei, imei_len);
+	if (nb_digits == IMEI_STR_LEN-1) { /* We should add a Check Digit (CD) at the end of string
+										* to build IMEI */
+		add_check_digit(data, nb_digits);
 	}
 
-	if (nb_digits == IMEI_STR_LEN) { /* The IMEI lenght is OK but not yet check */
-		fprintf(stdout, "IMEI: %.*s\n", nb_digits, data);
-		fprintf(stdout, "CD: %c\n", data[nb_digits-1]);
+	if (nb_digits == IMEI_STR_LEN) { /* The IMEI lenght is OK but has not yet checked */
+		check_last_digit(data, nb_digits);
 	}
 
 	if (nb_digits == IMEISV_STR_LEN) { /* We should extract IMEI from IMEISV
