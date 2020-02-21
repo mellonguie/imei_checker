@@ -1,18 +1,13 @@
-/* 
- * This module contains the definition of functions
- * which handle the options.
- */
-
-/* Autor : MELLO NGUIE Jean Prince
- * Creation date : 20/10/2019
- * Update date   : XX/XX/XXXX
- * Revision      : 1.0.0
- */
+/**
+ * Autor : MELLO NGUIE Jean Prince
+ * Creation date : 10/20/2019
+ * Update date   : 02/21/2020
+ * Revision      : 1.0.1
+ **/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*#include <getopt.h>*/
 #include <ctype.h>
 
 #include "imei.h"
@@ -22,119 +17,13 @@ void print_help(void)
 	fprintf(stdout, "./imei_imeisv_checking <my-imei-imeisv>\n");
 }
 
-void print_version(void)
-{
-	fprintf(stdout, "imei_imeisv_checking %s\n\n\nWritten by %s.\n", RELEASE, AUTOR);
-}
-
-#if 0
-void print_info(char **argv)
-{
-	fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);
-}
-
-int parsing_options(int argc, char **argv)
-{
-	int opt;
-	int n = 0;
-
-	while ((opt = getopt(argc, argv, "hvi:")) != -1)
-	{
-		n++; /* enable to know if an option has been found */
-		switch (opt) {
-			case 'h' :
-				print_help();
-				break;
-
-			case 'v' :
-				print_version();
-				break;
-
-			case 'i' :
-				filename = optarg;
-				break;
-			default :
-				print_info(argv);
-				return -1;
-        }
-    }
-
-    if ((opt == -1) && (n == 0))
-    {
-        print_info(argv);
-    }
-    
-    return opt;
-}
-#endif
-
-#if 0
-int get_long_options(int argc, char **argv)
-{
-    int n = 0;
-    int opt;
-    int opt_idx;
-    static struct option long_options[] = {
-                   {"help",     no_argument,       0, 'h'},
-                   {"version",  no_argument,       0, 'v'},
-                   {"in-file",  required_argument, 0, 'i'},
-               };
-
-    while ((opt = getopt_long(argc, argv, "hvqw:i:s", long_options, &opt_idx)) != -1)
-    {
-        n++; /* enable to know if an option has been found */
-        switch (opt) {
-            case 'h' :
-                print_help();
-                break;
-
-            case 'v' :
-                print_version();
-                break;
-
-            case 'i' :
-                filename = optarg;
-                return opt;
-                /*pcap_fd = pcap_open_offline(optarg, errbuf);
-                if (pcap_fd == NULL)
-                {
-                    pcap_perror(pcap_fd, errbuf);
-                    return EXIT_FAILURE;
-                }
-
-                printf("file opened with success !\n");
-
-                pcap_close(pcap_fd);*/
-                break;
-
-            case 's' :
-                return opt;
-                break;
-
-            case '?' :
-                break;
-
-            default :
-                print_info(argv);
-        }
-    }
-
-    if ((opt == -1) && (n == 0))
-    {
-        print_info(argv);
-    }
-    
-    return opt;
-}
-#endif
-
 void tac_extraction(char *data) {
 	int i;
 	fprintf(stdout, "TAC: ");
 	for (i = 0; i < TAC_STR_LEN; i++) {
 		fprintf(stdout, "%c", data[i]);
 	}
-    fprintf(stdout, " (%d)\n", TAC_STR_LEN);
+    fprintf(stdout, "\n");
 }
 
 void snr_extraction(char *data) {
@@ -143,7 +32,7 @@ void snr_extraction(char *data) {
 	for (i = TAC_STR_LEN; i < TAC_STR_LEN + SNR_STR_LEN; i++) {
 		fprintf(stdout, "%c", data[i]);
 	}
-    fprintf(stdout, " (%d)\n", SNR_STR_LEN);
+    fprintf(stdout, "\n");
 }
 
 /* Convert each char to int */
@@ -307,7 +196,7 @@ void add_check_digit(char *data, uint32_t nb_digits)
 	imei = imei_build(data, nb_digits, cd);
 	imei_len = strlen(imei);
 	
-	fprintf(stdout, "IMEI: %.*s (%lu)\n", (int)imei_len, imei, imei_len);
+	fprintf(stdout, "IMEI: %.*s\n", (int)imei_len, imei);
 }
 
 void extract_sub_string(char *src_data, char *dst_data, int len)
@@ -338,9 +227,9 @@ int check_last_digit(char *data, uint32_t nb_digits)
 	
 	/* Compare last digit and current CD */
 	if (cd == last_digit) {
-		fprintf(stdout, "IMEI: %.*s (%d) is valid.\n", IMEI_STR_LEN, data, IMEI_STR_LEN);
+		fprintf(stdout, "IMEI: %.*s is valid.\n", IMEI_STR_LEN, data);
 	} else {
-		fprintf(stdout, "IMEI: %.*s (%d) is not valid.\n", IMEI_STR_LEN, data, IMEI_STR_LEN);
+		fprintf(stdout, "IMEI: %.*s is not valid.\n", IMEI_STR_LEN, data);
 	}
 
 	free(imei_tmp);
@@ -391,7 +280,7 @@ cannot be an IMEI or IMEISV !\n", data_len);
 
 	if (nb_digits == IMEISV_STR_LEN) { /* We should extract IMEI from IMEISV
 										  and complement by a Check Digit (CD) */
-		fprintf(stdout, "IMEISV: %.*s\n", nb_digits, data);
+		fprintf(stdout, "IMEISV: %.*s (%d)\n", nb_digits, data, nb_digits);
 		fprintf(stdout, "SVN: %.*s\n", 2, &data[nb_digits-2]);
 	}
 

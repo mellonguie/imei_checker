@@ -1,13 +1,9 @@
-###################################
-# This GNUmakefile enables to 
-# build imei_imeisv_checking program.
-##################################
-
 ### Global variables ###
-DEBUG ?= 1
+DEBUG ?= 0
 CC    ?= gcc
+
 ifeq ($(DEBUG), 1)
-    CFLAGS ?= -W -Wall -ansi -pedantic -g -O0 -D_DEFAULT_SOURCE
+    CFLAGS ?= -W -Wall -ansi -pedantic -g -O0 -D_DEFAULT_SOURCE -DDEBUG
 else
     CFLAGS ?= -W -Wall -ansi -pedantic -D_DEFAULT_SOURCE
 endif
@@ -26,16 +22,14 @@ else
 endif
 
 $(APP): $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^
 
 %.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 ### Program cleaning ###
-.PHONY: clean mrproper
+.PHONY: clean
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(APP) $(OBJ)
 
-mrproper: clean
-	rm -f $(APP)

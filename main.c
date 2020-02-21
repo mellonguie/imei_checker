@@ -1,9 +1,12 @@
-/* This program enables to check the validity of an IMEI or IMEISV string */
- 
-/* Autor : MELLO NGUIE Jean Prince
- * Creation date : 20/10/2019
- * Update date : X/XX/XXXX
- * Revision : v1.0.0 */
+/**
+  This program enables to check the
+  validity of an IMEI or IMEISV string
+
+  Autor : Jean Prince MELLO NGUIE
+  Creation date : 10/20/2019
+  Update date : 02/21/2020
+  Revision : v1.0.1
+ **/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,14 +26,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	/* Parse options */
-	/*opt = get_long_options(argc, argv);*/
-	/*opt = parsing_options(argc, argv);
-	if (opt >= 0) {
-		return EXIT_FAILURE;
-	}*/
-
-	ret = imei_imeisv_checking(argv[argc-1]);
+	ret = imei_imeisv_checking(argv[1]);
 	if (ret != 0) {
 		return EXIT_FAILURE;
 	}
