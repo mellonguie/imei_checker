@@ -227,6 +227,7 @@ int check_last_digit(char *data, uint32_t nb_digits)
 	
 	/* Compare last digit and current CD */
 	if (cd == last_digit) {
+		fprintf(stdout, "CD: %c\n", cd);
 		fprintf(stdout, "IMEI: %.*s is valid.\n", IMEI_STR_LEN, data);
 	} else {
 		fprintf(stdout, "IMEI: %.*s is not valid.\n", IMEI_STR_LEN, data);
