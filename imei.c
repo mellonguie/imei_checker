@@ -284,9 +284,9 @@ cannot be an IMEI or IMEISV !\n", data_len);
 	}
 
 	if (nb_digits == IMEISV_STR_LEN) { /* We should extract IMEI from IMEISV
-										  and complement by a Check Digit (CD) */
-		fprintf(stdout, "IMEISV: %.*s (%d)\n", nb_digits, data, nb_digits);
+										  and complement it by a Check Digit (CD) */
 		fprintf(stdout, "SVN: %.*s\n", 2, &data[nb_digits-2]);
+		fprintf(stdout, "IMEISV: %.*s\n", nb_digits, data);
 	}
 
 	return 0;

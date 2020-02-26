@@ -23,12 +23,20 @@ TAC: 35478405
 SNR: 412998
 CD: 7
 IMEI: 354784054129987 is valid.
+
+./imei_imeisv_checking 3547840541299059
+IMEI/IMEISV: 3547840541299059
+TAC: 35478405
+SNR: 412990
+SVN: 59
+IMEISV: 3547840541299059
 ```
 
 ### Notes :
-**TAC** : Type Allocation Code \
-**SNR** : Serial Number \
-**CD**  : Check Digit
+**TAC** : Type Allocation Code (is 8 bytes long) \
+**SNR** : Serial Number (is 6 bytes long) \
+**CD**  : Check Digit (is 1 byte long) \
+**SVN** : Software Version Number (is 2 bytes long)
 
 *If you find any bugs, don't hesitate to create an issue. I will fix it.* \
 *Have fun ! ;)*
