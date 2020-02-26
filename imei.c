@@ -171,12 +171,15 @@ char luhn_check_digit(char *data, uint32_t len) {
 char *imei_build(char *data, uint32_t len, char cd) {
 	char *imei = NULL;
 	char cd_arr[2] = {0};
-	sprintf(cd_arr, "%c", (cd + '0'));
+
+	cd_arr[0] = cd;
+	cd_arr[1] = '\0';
 
 	imei = malloc(len + 3);
 	if (imei == NULL) {
 		return NULL;
 	}
+	memset(imei, 0, len + 3);
 
 	strcat(imei, data);
 	strcat(imei, cd_arr);
@@ -191,12 +194,13 @@ void add_check_digit(char *data, uint32_t nb_digits)
 	size_t imei_len;
 
 	cd = luhn_check_digit(data, nb_digits);
-	fprintf(stdout, "CD: %d\n", cd);
+	fprintf(stdout, "CD: %c\n", cd);
 
 	imei = imei_build(data, nb_digits, cd);
 	imei_len = strlen(imei);
 	
 	fprintf(stdout, "IMEI: %.*s\n", (int)imei_len, imei);
+	free(imei);
 }
 
 void extract_sub_string(char *src_data, char *dst_data, int len)
